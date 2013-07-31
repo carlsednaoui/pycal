@@ -52,8 +52,6 @@ def list_events():
   now = datetime.datetime.now()
   current_time = now.strftime('%Y-%m-%dT%H:%M:%S-04:00')
 
-  print current_time
-
   # Use max_time to look at events happening in the next 2 weeks
   two_weeks_from_now = now + datetime.timedelta(days=14)
   max_time = two_weeks_from_now.strftime('%Y-%m-%dT%H:%M:%S-04:00')
