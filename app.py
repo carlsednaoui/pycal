@@ -1,8 +1,5 @@
 
 import httplib2
-import os
-import pprint
-import sys
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -68,10 +65,7 @@ def list_events():
   while True:
     events = service.events().list(calendarId='primary', orderBy='startTime', singleEvents='False', timeMin=current_time, timeMax=max_time, pageToken=page_token).execute()
     for event in events['items']:
-      # print event['summary']
-      # print event['start']
-      # print event['end']
-      upcoming_events.append(event['summary'])
+      upcoming_events.append([event['summary'], event['start'], event['end']])
     page_token = events.get('nextPageToken')
     if not page_token:
       break
@@ -107,14 +101,13 @@ def create_event():
 @app.route('/')
 def view_calendar():
   events = list_events()
-  return render_template('hello.html', event_list=events)
+  return render_template('schedule.html', event_list=events)
 
 @app.route('/new')
 def new_event():
   created_event = create_event()
-  return render_template('hello.html', event_list=created_event)
+  return render_template('schedule.html', event_list=created_event)
 
 if __name__ == '__main__':
-  # main(sys.argv)
   app.debug = True # server will reload itself on code changes
   app.run()

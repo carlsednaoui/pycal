@@ -1,0 +1,12 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if event_list %}
+  <h1>Hello, here are some events:</h1>
+  <ul>
+  {% for event in event_list %}
+     <li>{{ event }}</li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <h1>Hello World!</h1>
+{% endif %}
