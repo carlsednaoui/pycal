@@ -1,5 +1,6 @@
 
 import httplib2
+import datetime
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -45,13 +46,13 @@ def list_events():
   """
   # Use current_time to pull events happening in the future
   # We're using EST (-4:00 hours)
-  import datetime
   now = datetime.datetime.now()
   current_time = now.strftime('%Y-%m-%dT%H:%M:%S-04:00')
 
   # Use max_time to look at events happening in the next 2 weeks
   two_weeks_from_now = now + datetime.timedelta(days=14)
   max_time = two_weeks_from_now.strftime('%Y-%m-%dT%H:%M:%S-04:00')
+  print max_time
 
   # Parameters definition
   ## calendarId='primary' - Look at the primary calendar for the authenticated user
@@ -71,30 +72,37 @@ def list_events():
       break
   return upcoming_events
 
-def create_event(summary, name, tel, email):
+def create_event(summary, name, tel, email, start_time):
   service = authenticate_google_calendar()
-  # check to make sure timeslot is available prior to scheduling new event
+  
+  # Ensure necessary fields are passed
+  if summary == '' or name == '' or tel == '' or email == '' or start_time == '':
+    print "You're missing a field"
+    return
 
   """
   Create new event
   """
   full_description = 'Call %s at %s. Email: %s' % (name, tel, email)
 
+  formatted_start_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M').strftime('%Y-%m-%dT%H:%M:%S-04:00')
+  end_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=30)
+  formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S-04:00')
+
   event = {
     'summary': summary,
     'description': full_description,
     'location': 'Phone',
     'start': {
-      'dateTime': '2013-08-01T10:00:00.000-07:00'
+      'dateTime': formatted_start_time
     },
     'end': {
-      'dateTime': '2013-08-01T10:25:00.000-07:00'
+      'dateTime': formatted_end_time
     }
   }
 
   # Uncomment below to execute
   created_event = service.events().insert(calendarId='primary', body=event).execute()
-  return created_event['id']
 
 @app.route('/')
 def view_calendar():
@@ -104,7 +112,8 @@ def view_calendar():
 @app.route('/new', methods=['POST'])
 def new_event():
   # assert False  
-  created_event = create_event(request.form['summary'], request.form['name'], request.form['tel'], request.form['email'])
+  created_event = create_event(request.form['summary'], request.form['name'], 
+    request.form['tel'], request.form['email'], request.form['start-time'])
   return redirect('/')
 
 if __name__ == '__main__':

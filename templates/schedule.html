@@ -12,6 +12,7 @@
 {% endif %}
 
 <!-- Form goes here -->
+{% raw %}
 <h2>Schedule a call!</h2>
 <form method="post" action="/new">
 
@@ -24,12 +25,17 @@
   <br>
 
   <label for="user-email">Email</label>
-  <input type="email" name="email" id="user-email">
+  <input type="email" name="email" placeholder="your@email.com" id="user-email">
   <br>
 
   <label for="user-tel">Telephone Number</label>
-  <input type="tel" name="tel" id="user-tel">
+  <input type="tel" name="tel" placeholder="212-555-5555" id="user-tel">
+  <br>
+
+  <label for="start-time">Datetime</label>
+  <input type="text" name="start-time" id="start-time">
   <br>
 
   <input type="submit" value="Schedule">
 </form>
+{% endraw %}
