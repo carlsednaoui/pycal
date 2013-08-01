@@ -10,3 +10,26 @@
 {% else %}
   <h1>Hello World!</h1>
 {% endif %}
+
+<!-- Form goes here -->
+<h2>Schedule a call!</h2>
+<form method="post" action="/new">
+
+  <label for="user-summary">Summary</label>
+  <input type="text" name="summary" id="user-summary">
+  <br>
+
+  <label for="user-name">Name</label>
+  <input type="text" name="name" id="user-name">
+  <br>
+
+  <label for="user-email">Email</label>
+  <input type="email" name="email" id="user-email">
+  <br>
+
+  <label for="user-tel">Telephone Number</label>
+  <input type="tel" name="tel" id="user-tel">
+  <br>
+
+  <input type="submit" value="Schedule">
+</form>

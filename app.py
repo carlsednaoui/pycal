@@ -6,7 +6,7 @@ from oauth2client.file import Storage
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
 
-from flask import Flask, render_template, make_response, request, Response
+from flask import Flask, render_template, make_response, request, Response, redirect
 app = Flask(__name__)
 
 CLIENT_SECRETS = 'client_secrets.json'
@@ -71,19 +71,17 @@ def list_events():
       break
   return upcoming_events
 
-def create_event():
+def create_event(summary, name, tel, email):
   service = authenticate_google_calendar()
+  # check to make sure timeslot is available prior to scheduling new event
 
   """
   Create new event
   """
-  name = "Carl Sednaoui"
-  tel = "646-498-6451"
-  email = "carlsed@gmail.com"
   full_description = 'Call %s at %s. Email: %s' % (name, tel, email)
 
   event = {
-    'summary': 'Phone call with Thinkful',
+    'summary': summary,
     'description': full_description,
     'location': 'Phone',
     'start': {
@@ -103,10 +101,11 @@ def view_calendar():
   events = list_events()
   return render_template('schedule.html', event_list=events)
 
-@app.route('/new')
+@app.route('/new', methods=['POST'])
 def new_event():
-  created_event = create_event()
-  return render_template('schedule.html', event_list=created_event)
+  # assert False  
+  created_event = create_event(request.form['summary'], request.form['name'], request.form['tel'], request.form['email'])
+  return redirect('/')
 
 if __name__ == '__main__':
   app.debug = True # server will reload itself on code changes
