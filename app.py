@@ -39,19 +39,9 @@ def authenticate_google_calendar():
   return build('calendar', 'v3', http=http)
 
 
-def list_events():
+def list_events(min_time, max_time):
   service = authenticate_google_calendar()
   upcoming_events = []
-
-  # Use current_time to pull events happening in the future
-  # We're using EST (-4:00 hours)
-  now = datetime.datetime.now()
-  current_time = now.strftime(TIME_FORMAT)
-
-  # Use max_time to look at events happening in the next 2 weeks
-  two_weeks_from_now = now + datetime.timedelta(days=14)
-  max_time = two_weeks_from_now.strftime(TIME_FORMAT)
-  print max_time
 
   # Parameters definition
   ## calendarId='primary' - Look at the primary calendar for the authenticated user
@@ -63,7 +53,7 @@ def list_events():
 
   page_token = None
   while True:
-    events = service.events().list(calendarId='primary', orderBy='startTime', singleEvents='False', timeMin=current_time, timeMax=max_time, pageToken=page_token).execute()
+    events = service.events().list(calendarId='primary', orderBy='startTime', singleEvents='False', timeMin=min_time, timeMax=max_time, pageToken=page_token).execute()
     for event in events['items']:
       upcoming_events.append([event['summary'], event['start'], event['end']])
     page_token = events.get('nextPageToken')
@@ -73,14 +63,30 @@ def list_events():
 
 
 # check to make sure timeslot is available prior to scheduling new event
-def check_time_availability(start_time, end_time):
-  service = authenticate_google_calendar()
+def is_available(start_time):
+  # Add 10 minutes padding
+  start_time_with_padding = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=-10)
+  formatted_start_time = start_time_with_padding.strftime(TIME_FORMAT)
+
+  end_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=40)
+  formatted_end_time = end_time.strftime(TIME_FORMAT)
+
+  events = list_events(formatted_start_time, formatted_end_time)
+  if len(events) == 0:
+    return True
+  else:
+    return False
 
 
 def create_event(summary, name, tel, email, start_time):
   # Ensure necessary fields are passed
   if summary == '' or name == '' or tel == '' or email == '' or start_time == '':
     print "You're missing a field"
+    return
+
+  available = is_available(start_time)
+  if available == False:
+    print "There's already an event happening at that time. So sad."
     return
 
   service = authenticate_google_calendar()
@@ -111,7 +117,16 @@ def create_event(summary, name, tel, email, start_time):
 
 @app.route('/')
 def view_calendar():
-  events = list_events()
+  # Use current_time to pull events happening in the future
+  # We're using EST (-4:00 hours)
+  now = datetime.datetime.now()
+  min_time = now.strftime(TIME_FORMAT)
+
+  # Use max_time to look at events happening in the next 2 weeks
+  two_weeks_from_now = now + datetime.timedelta(days=14)
+  max_time = two_weeks_from_now.strftime(TIME_FORMAT)
+  
+  events = list_events(min_time, max_time)
   return render_template('schedule.html', event_list=events)
 
 
