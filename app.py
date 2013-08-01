@@ -10,7 +10,9 @@ from flask import Flask, render_template, request, redirect
 app = Flask(__name__)
 
 CLIENT_SECRETS = 'client_secrets.json'
-TIME_FORMAT = '%Y-%m-%dT%H:%M:%S-04:00'
+
+# We're using EST (-4:00 hours)
+TIME_FORMAT = '%Y-%m-%dT%H:%M:%S-04:00' 
 
 # Set up a Flow object to be used for authentication.
 FLOW = flow_from_clientsecrets(CLIENT_SECRETS,
@@ -44,16 +46,18 @@ def list_events(min_time, max_time):
   upcoming_events = []
 
   # Parameters definition
-  ## calendarId='primary' - Look at the primary calendar for the authenticated user
+  ## calendarId='primary' - Look at the primary calendar
   ## orderBy='startTime'  - Order events listed by start_time
-  ## singleEvents='False' - Expand recurring events into instances to see when each recurrence happens
-  ## timeMin=current_time - Use current_time as lower bound (only pull events happening in the future)
-  ## timeMax=max_time     - Use max_time as upper bound (only look 2 weeks ahead in the calendar)
+  ## singleEvents='False' - Expand recurring events into invididual occurences
+  ## timeMin=min_time     - Use min_time as lower bound
+  ## timeMax=max_time     - Use max_time as upper bound
   ## pageToken=page_token - Token specifying which result page to return
 
   page_token = None
   while True:
-    events = service.events().list(calendarId='primary', orderBy='startTime', singleEvents='False', timeMin=min_time, timeMax=max_time, pageToken=page_token).execute()
+    events = service.events().list(calendarId='primary', orderBy='startTime',
+      singleEvents='False', timeMin=min_time, timeMax=max_time, 
+      pageToken=page_token).execute()
     for event in events['items']:
       upcoming_events.append([event['summary'], event['start'], event['end']])
     page_token = events.get('nextPageToken')
@@ -62,13 +66,15 @@ def list_events(min_time, max_time):
   return upcoming_events
 
 
-# check to make sure timeslot is available prior to scheduling new event
+# Check to make sure timeslot is available prior to scheduling new event
 def is_available(start_time):
   # Add 10 minutes padding
-  start_time_with_padding = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=-10)
+  start_time_with_padding = datetime.datetime.strptime(start_time,
+    '%Y-%m-%d %H:%M') + datetime.timedelta(minutes=-10)
   formatted_start_time = start_time_with_padding.strftime(TIME_FORMAT)
 
-  end_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=40)
+  end_time = datetime.datetime.strptime(start_time,
+    '%Y-%m-%d %H:%M') + datetime.timedelta(minutes=40)
   formatted_end_time = end_time.strftime(TIME_FORMAT)
 
   events = list_events(formatted_start_time, formatted_end_time)
@@ -81,7 +87,7 @@ def is_available(start_time):
 def create_event(summary, name, tel, email, start_time):
   # Ensure necessary fields are passed
   if summary == '' or name == '' or tel == '' or email == '' or start_time == '':
-    print "You're missing a field"
+    print "Field(s) missing."
     return
 
   available = is_available(start_time)
@@ -93,10 +99,12 @@ def create_event(summary, name, tel, email, start_time):
   full_description = 'Call %s at %s. Email: %s' % (name, tel, email)
 
   # Format start time. Expected input = YYYY-MM-DD HH:MM
-  formatted_start_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M').strftime(TIME_FORMAT)
+  formatted_start_time = datetime.datetime.strptime(start_time,
+    '%Y-%m-%d %H:%M').strftime(TIME_FORMAT)
   
   # Calculate end time by adding 30 minutes to start time.
-  end_time = datetime.datetime.strptime(start_time,'%Y-%m-%d %H:%M') + datetime.timedelta(minutes=30)
+  end_time = datetime.datetime.strptime(start_time,
+    '%Y-%m-%d %H:%M') + datetime.timedelta(minutes=30)
   formatted_end_time = end_time.strftime(TIME_FORMAT)
 
   event = {
@@ -118,7 +126,6 @@ def create_event(summary, name, tel, email, start_time):
 @app.route('/')
 def view_calendar():
   # Use current_time to pull events happening in the future
-  # We're using EST (-4:00 hours)
   now = datetime.datetime.now()
   min_time = now.strftime(TIME_FORMAT)
 
