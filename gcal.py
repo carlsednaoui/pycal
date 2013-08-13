@@ -6,6 +6,10 @@ from oauth2client.file import Storage
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
 
+# To get this file go here: https://code.google.com/apis/console
+# Click on API Access
+# Click Download JSON for the appropriate Cliend ID
+# If you don't have any, create one and select 'Installed Application'
 CLIENT_SECRETS = 'client_secrets.json'
 
 # We're using EST (-4:00 hours)
