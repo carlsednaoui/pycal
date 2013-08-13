@@ -1,0 +1,15 @@
+Flask==0.10.1
+Jinja2==2.7
+MarkupSafe==0.18
+Werkzeug==0.9.3
+google-api-python-client==1.1
+httplib2==0.8
+ipython==0.13.2
+itsdangerous==0.22
+matplotlib==1.1.0
+numpy==1.6.1
+python-gflags==2.0
+readline==6.2.4.1
+regetron==1.4
+virtualenv==1.9.1
+wsgiref==0.1.2
