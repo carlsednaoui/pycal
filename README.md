@@ -1,6 +1,14 @@
-Remember to add client_secrets.json
+# Pycal
+This code is the result of playing around with Python and the Google Calendar API. 
 
-##The actual app needs to:
+__This code is for learning purposes and is NOT production ready.__
+
+## Notes
+Remember to add client_secrets.json (instructions in gcal.py).
+
+The form could be switched from simple HTML form to [WTForms](http://flask.pocoo.org/docs/patterns/wtforms/).
+
+## This test app needs to:
   - collect the users phone number, time
   - know not to double-schedule
   - ask for the user's name
